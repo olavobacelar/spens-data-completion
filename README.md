@@ -1,3 +1,3 @@
-# spens-data-completion
+# Structured Prediction Energy Networks for Data Completion
 
-Organize and make sure files are organized/connected
+
