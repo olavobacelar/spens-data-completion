@@ -130,6 +130,118 @@ def pickle_load(filename, save_dir=None, full_path=False):
 
     with open(save_dir + filename, 'rb') as f:
         return pickle.load(f)
+    
+def extract_model_from_checkpoint(checkpoint, model=None, optimizer=None, 
+                                  best_or_last_model='best', 
+                                  load_instances_or_state='instances', 
+                                  send_to_cuda=True, eval=True):
+    
+    # check out how to use a losslogger = checkpoint['losslogger']
+    if not best_or_last_model in ['best', 'last']:
+        raise Exception('You must choose either the best or the last model!')
+    if not load_instances_or_state in ['instances', 'state']:
+        raise Exception('You must choose to get the instances returned, or the '
+                        'model and optimizer updated with the saved state!')
+    
+    if load_instances_or_state == 'instances':
+        if best_or_last_model == 'best':
+            model = checkpoint['best_model']
+            optimizer = checkpoint['best_optimizer']
+        else:
+            model = checkpoint['last_model']
+            optimizer = checkpoint['last_optimizer']
+        return model, optimizer
+    else:
+        # if load_instances_or_state is state, just change the state of model and optimizer
+        assert model is not None and optimizer is not None
+        if best_or_last_model == 'best':
+            model.load_state_dict(checkpoint['best_model_state_dict'])
+            optimizer.load_state_dict(checkpoint['best_optimizer_state_dict'])
+        else:
+            model.load_state_dict(checkpoint['last_model_state_dict'])
+            optimizer.load_state_dict(checkpoint['last_optimizer_state_dict'])   
+    
+    if send_to_cuda:
+        model.to('cuda')
+    if eval:
+        model.eval()
+    
+    if load_instances_or_state == 'instances':
+        return model, optimizer
+
+def save_checkpoint(file_name, save_dir=None, best_model=None, last_model=None,
+                    best_optimizer=None, last_optimizer=None, to_save='everything',
+                    send_to_cpu=False, full_path=False, **kwargs):
+    '''We can save the best_model, last_model, best_optimizer, last_optimizer, 
+    and as kwargs the best_epoch, last_epoch, minimum_loss, batch_size, comments
+    (a string with extra notes), etc.
+    If save_dir is None, it will default to add the directory pickle to BASE_DIR
+    By default, we send to CPU because it's safer this way I think
+    '''
+
+    def add_pytorch_model_or_optim_to_checkpoint(pytorch_object, object_name, to_save):
+        nonlocal checkpoint
+        if to_save not in ['everything', 'only_model', 'only_state_dict']:
+            raise TypeError('to_save must indicate whether to save the module,'
+                            ' only the state_dict, or both!')
+        if send_to_cpu and isinstance(pytorch_object, torch.optim.Optimizer):
+            raise TypeError("send_to_cpu doesn't apply for Optimizer objects!")
+
+        if to_save == 'everything':
+            if isinstance(pytorch_object, nn.Module) and send_to_cpu:
+                checkpoint[object_name] = pytorch_object.to('cpu')
+            else:
+                checkpoint[object_name] = pytorch_object
+            checkpoint[object_name+'_state_dict'] = pytorch_object.state_dict()
+        elif to_save == 'only_model':
+            if isinstance(pytorch_object, nn.Module) and send_to_cpu:
+                checkpoint[object_name] = pytorch_object.to('cpu')
+            else:
+                checkpoint[object_name] = pytorch_object
+        elif to_save == 'only_state_dict':
+            checkpoint[object_name+'_state_dict'] = pytorch_object.state_dict()
+
+    checkpoint = {}
+    if best_model is not None:
+        add_pytorch_model_or_optim_to_checkpoint(best_model, 'best_model', to_save)
+    if last_model is not None:
+        add_pytorch_model_or_optim_to_checkpoint(last_model, 'last_model', to_save)
+    if best_optimizer is not None:
+        add_pytorch_model_or_optim_to_checkpoint(best_optimizer, 'best_optimizer', to_save)
+    if last_optimizer is not None:
+        add_pytorch_model_or_optim_to_checkpoint(last_optimizer, 'last_optimizer', to_save)
+    checkpoint.update(kwargs)
+
+    if full_path:
+        save_dir = ''
+    else:
+        # By default loads from the pickle directory
+        if save_dir is None:
+            save_dir = BASE_DIR + 'checkpoints/'
+        else:
+            save_dir = BASE_DIR + save_dir
+    
+    torch.save(checkpoint, save_dir + file_name)
+
+
+def load_checkpoint(file_name, save_dir=None, full_path=False):
+
+    if full_path:
+        save_dir = ''
+    else:
+        # By default loads from the pickle directory
+        if save_dir is None:
+            save_dir = BASE_DIR + 'checkpoints/'
+        else:
+            save_dir = BASE_DIR + save_dir
+    
+    full_path_to_file = save_dir + file_name
+
+    if os.path.isfile(full_path_to_file):
+        checkpoint = torch.load(full_path_to_file)
+        return checkpoint
+    else:
+        raise Exception("This path doesn't correspond to any file!")
 
 # def _plot_font_old(x, mode='1_row'):
 #     # Está a dar mal ainda! É preciso pôr a funcionar para tensores
