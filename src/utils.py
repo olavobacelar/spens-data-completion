@@ -1,5 +1,6 @@
 import string
 import matplotlib.pyplot as plt
+import torch.nn as nn
 
 # Auxiliary functions to deal with parameters
 # !!! say where they were taken from.
