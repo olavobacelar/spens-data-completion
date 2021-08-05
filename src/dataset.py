@@ -1,4 +1,5 @@
 # Preparar os dados no __init__ para ser mais fácil depois.
+#
 
 import pandas as pd
 import numpy as np
