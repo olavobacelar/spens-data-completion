@@ -24,30 +24,6 @@ def freeze_all(model_params):
 def discretize(x, threshold=0.5):
     return where(x < threshold, 0, 1)
 
-class boostedLoss(nn.Module):
-    '''   
-    if c > 1 increases the value of optimizing for the hidden masks'''
-
-    def __init__(self, loss, c):
-        super(boostedLoss, self).__init__()
-        self.loss = loss
-        self.c = c
-
-    def forward(self, y, y_, letter_masks):
-        # print(y.device, y_.device, letter_masks.device, n_masked.device, n_not_masked.device)~
-        n_not_masked = (letter_masks).sum().detach()
-        n_masked = (~letter_masks).sum().detach()
-        loss_not_masked = self.loss(y[letter_masks], y_[letter_masks])
-        loss_masked = self.loss(y[~letter_masks], y_[~letter_masks])
-        output = n_not_masked*loss_not_masked + self.c*n_masked*loss_masked
-        output = output / (n_not_masked + self.c*n_masked)
-        return output
-
-def hamming_loss(y_pred, y):
-  if y_pred.shape != y.shape:
-    raise Exception('The tensors don\'t have the same shape!')
-  return (y_pred != y).sum().item()/y.numel()
-
 def where(cond, x, y):  # modificar para usar torch.where
     return cond*x + ~cond*y
 
@@ -127,6 +103,33 @@ def plot_font(x, choice_characters_mask=None, mode='1_row'):
     plt.subplots_adjust(wspace=0.05, hspace=0.05)
     plt.show()
 
+def pickle_dump(object, filename, save_dir=None, full_path=False):
+
+    if full_path:
+        save_dir = ''
+    else:
+        # By default saves to the pickle directory
+        if save_dir is None:
+            save_dir = BASE_DIR + 'pickle/'
+        else:
+            save_dir = BASE_DIR + save_dir
+
+    with open(save_dir + filename, 'wb') as f:
+        pickle.dump(object, f)
+
+def pickle_load(filename, save_dir=None, full_path=False):
+
+    if full_path:
+        save_dir = ''
+    else:
+        # By default loads from the pickle directory
+        if save_dir is None:
+            save_dir = BASE_DIR + 'pickle/'
+        else:
+            save_dir = BASE_DIR + save_dir
+
+    with open(save_dir + filename, 'rb') as f:
+        return pickle.load(f)
 
 # def _plot_font_old(x, mode='1_row'):
 #     # Está a dar mal ainda! É preciso pôr a funcionar para tensores
