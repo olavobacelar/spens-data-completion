@@ -22,7 +22,7 @@ def dice_coefficient(y_, y):
     dice_coeff = torch.true_divide(numerator, denominator).mean()
     return dice_coeff.item()
 
- def init_running_metrics(metrics_names):
+def init_running_metrics(metrics_names):
     metrics = {}
     for name in metrics_names:
         metrics[name] = 0.
