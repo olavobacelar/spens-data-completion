@@ -23,6 +23,25 @@ def freeze_all(model_params):
 def discretize(x, threshold=0.5):
     return where(x < threshold, 0, 1)
 
+class boostedLoss(nn.Module):
+    '''   
+    if c > 1 increases the value of optimizing for the hidden masks'''
+
+    def __init__(self, loss, c):
+        super(boostedLoss, self).__init__()
+        self.loss = loss
+        self.c = c
+
+    def forward(self, y, y_, letter_masks):
+        # print(y.device, y_.device, letter_masks.device, n_masked.device, n_not_masked.device)~
+        n_not_masked = (letter_masks).sum().detach()
+        n_masked = (~letter_masks).sum().detach()
+        loss_not_masked = self.loss(y[letter_masks], y_[letter_masks])
+        loss_masked = self.loss(y[~letter_masks], y_[~letter_masks])
+        output = n_not_masked*loss_not_masked + self.c*n_masked*loss_masked
+        output = output / (n_not_masked + self.c*n_masked)
+        return output
+
 def hamming_loss(y_pred, y):
   if y_pred.shape != y.shape:
     raise Exception('The tensors don\'t have the same shape!')
