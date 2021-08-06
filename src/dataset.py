@@ -4,6 +4,7 @@
 import pandas as pd
 import numpy as np
 import numpy.random as rd
+from typing import Union
 import torch
 from dataclasses import dataclass
 from torch.utils.data import Dataset, DataLoader
