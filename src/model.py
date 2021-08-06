@@ -1,4 +1,6 @@
-from dataclasses import dataclass
+from typing import List, Tuple
+from typing import Tuple
+from dataclasses import dataclass, astuple
 import torch
 from torch import nn
 import torch.nn.functional as F
