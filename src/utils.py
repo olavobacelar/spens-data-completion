@@ -1,6 +1,7 @@
 import string
 import pickle
 import matplotlib.pyplot as plt
+import torch
 import torch.nn as nn
 
 # Auxiliary functions to deal with parameters
