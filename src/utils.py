@@ -42,6 +42,57 @@ def plot_character(x):
     plt.spy(x)
     plt.show()
 
+def plot_font(x, letter_masks=None, mode='1_row', to_show=True, to_save=False, save_dir=None, filename=None):
+    # Está a dar mal ainda! É preciso pôr a funcionar para tensores
+    # Por a mostrar letras que faltam também para 5_rows!
+
+    if to_save and (save_dir is None or filename is None):
+        raise Exception('Introduce a valid directory and filename!')
+
+    if mode == '4_rows':
+        fig, axs = plt.subplots(4, 7, figsize=(8, 8*4/7))
+        shape = x[0].shape
+        index = 0
+        for i in range(4):
+            j = 0
+            while j < 7:
+                axs[i, j].set_axis_off()
+                skip_plot = i != 3 or j != 0
+                if skip_plot and index < 26:
+                    axs[i, j].imshow(x[index], cmap='Greys', norm=plt.Normalize(0., 1.))
+                    index += 1
+                j += 1
+        
+    elif mode == '2_rows':
+        fig, axs = plt.subplots(2, 13, figsize=(15, 15*2/13))
+        shape = x[0].shape
+        index = 0
+        for i in range(2):
+            for j in range(13):
+                axs[i, j].set_axis_off()
+                if index < 26:
+                    axs[i, j].imshow(x[index], cmap='Greys', norm=plt.Normalize(0., 1.))
+                index += 1
+
+    elif mode == '1_row':
+        fig, axs = plt.subplots(1, len(x), figsize=(24, 24))
+        for i, ax in enumerate(axs):
+            ax.set_axis_off()
+            ax.imshow(x[i], cmap='Greys', norm=plt.Normalize(0., 1.))
+            if letter_masks is not None and letter_masks[i] == 1:
+                add_subplot_border(ax, width=2, color='red')
+    else:
+        raise Exception(f'The mode "{mode}" doesn\'t exist!')
+    plt.setp(axs, xticks=[], yticks=[])
+    plt.subplots_adjust(wspace=0.05, hspace=0.05)
+    if to_save:
+        plt.savefig(save_dir + filename + '.png', dpi=200, format='png', bbox_inches='tight')
+    if to_show:
+        plt.show()
+    else:
+        # this closes the figure, preventing it from being shown by the notebook
+        # (which we might want if we want to produce a lot of pictures)
+        plt.close(fig)
 
 # taken with mods from https://stackoverflow.com/questions/45441909/how-to-add-a-fixed-width-border-to-subplot
 def add_subplot_border(ax, width=0, color=None):
