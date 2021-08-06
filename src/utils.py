@@ -295,6 +295,162 @@ def load_checkpoint(file_name, save_dir=None, full_path=False):
     else:
         raise Exception("This path doesn't correspond to any file!")
 
+
+def get_usual_energy_net_params(model):
+    # TODO: Não criar lista de parametros, mas iterador
+    ps = list(model.parameters())[0:36] + \
+         list(model.parameters())[76:]
+    return ps
+
+def get_usual_energy_net_fc_params(model):
+    # TODO: Não criar lista de parametros, mas iterador
+    # It doesn't return the bias of the last linear layer in purpose
+    # as this one will not not be involved in the derivatie
+    ps = list(model.parameters())[76:]
+    return ps
+
+def get_usual_energy_net_named_params(model):
+    # TODO: Não criar lista de parametros, mas iterador
+    ps = list(energyNet.named_parameters())[0:36] + \
+         list(energyNet.named_parameters())[76:]
+    return ps
+
+def get_usual_energy_net_named_fc_params(model):
+    # TODO: Não criar lista de parametros, mas iterador
+    ps = list(model.named_parameters())[76:]
+    return ps
+
+# def set_usual_energy_net_params(model, new_parameter_grads):
+#     ps = list(model.parameters())[0:36] + list(model.parameters())[76:]
+#     for i, p in enumerate(ps):
+#         p.grad = new_parameter_grads[i]
+
+eps = torch.finfo(torch.float32).eps
+
+class AvoidZeroOne(nn.Module):
+    def __init__(self):
+        super(AvoidZeroOne, self).__init__()
+    def forward(x):
+        eps_tensor = torch.tensor(eps).expand(x.size()).to(device)
+        x = torch.where(x==0., eps_tensor, x)
+        x = torch.where(x==1., 1-eps_tensor, x)
+        return x
+
+def Histogram(a, bins=50, density=True, new_figure=True, figsize=(10,7), vals=False, *args, **kwargs):
+    hist, bins = np.histogram(a, bins, density=density)
+    bincenters = 0.5*(bins[1:] + bins[:-1])
+    if new_figure:
+        plt.figure(0, figsize=figsize)
+    plt.plot(bincenters, hist, *args, **kwargs)
+    if vals:
+        return bincenters, hist
+
+class Entropy(nn.Module):
+    def __init__(self):
+        super(Entropy, self).__init__()
+
+    # This one would be the case if we'd have dimension 1 corresponding to the logits of a certain distribution 
+    # def forward(self, logits):
+    #     p_log_p = F.softmax(logits, dim=1) * F.log_softmax(logits, dim=1)
+    #     h = - p_log_p.sum(dim=1)
+    #     return h
+
+    def forward(self, logits):
+        n = logits.shape[0]
+        p = AvoidZeroOne.forward(torch.sigmoid(logits))
+        t = p*torch.log(p) + (1.-p)*torch.log(1.-p)
+        h = -t.sum((1, 2))
+        return h
+
+entropy = Entropy()
+
+class Squeeze(nn.Module):
+    def __init__(self):
+        super(Squeeze, self).__init__()
+    #Make differentiable!
+    def forward(self, l):
+        max_abs = torch.max(torch.abs(l))
+        return l/max_abs
+        
+squeeze = Squeeze()
+
+def create_hparams_dict(last_softplus, init_mode, n_iter_inference, entropy_factor, inner_lr, lr):
+    hparams_dict = {'last_softplus': last_softplus,
+                    'init_mode': init_mode,
+                    'n_iter_inference': n_iter_inference,
+                    'entropy_factor': entropy_factor,
+                    'inner_lr': inner_lr,
+                    'outer_lr': lr}
+    return hparams_dict
+
+
+def ask_add_epochs(default_n_epochs=5):
+    valid_result = False
+    while valid_result is not True:
+        prompt = f'Press "c" to continue to the next probability setting.\n'\
+                 f'You can also press Enter to add a new epoch, indicate how many epochs to add to this one, '\
+                 f'or press "d" to add the default number of epochs ({default_n_epochs}).\n'
+        r = input(prompt)   
+        if r == 'd':
+            r = str(default_n_epochs)
+        if r.isnumeric():
+            print(f'Add {int(r)} epoch(s)!')
+            valid_result = True
+            return int(r)
+        elif r == '':
+            print(f'Add 1 epoch!')
+            return 1
+        elif r == 'c':
+            print('Continue!')
+            return False
+        else:
+            print('Introduce a valid number of epochs!')
+
+def probs_curriculum_learning(probs_choice, duration_learning):
+    # duration_learning is the number of epochs for each probs_choice
+    new_setting = True
+    epoch = 1
+    for setting_index, (prob_choice, n_epoch) in enumerate(zip(probs_choice, duration_learning)):
+        j = 0
+        while j < n_epoch:
+            yield epoch, prob_choice, new_setting, setting_index
+            new_setting = False
+            if j == n_epoch - 1:
+                try:
+                    n_extra_epochs = ask_add_epochs()
+                    if type(n_extra_epochs) is int:
+                        n_epoch += n_extra_epochs
+                    if n_extra_epochs == False:
+                        new_setting = True
+                        pass
+                except EOFError:
+                    new_setting = True
+                    pass
+            j += 1
+            epoch += 1
+
+def print_header_scores():
+    print(f'\nEpoch  |  Custom BCE   BCE (train)   BCE (valid)   IOU (train)   IOU (valid)  |  k_valid     k_train    Max valid IoU   Max train IoU')
+
+# create dataclass for train_metrics?
+def print_scores(epoch, train_metrics, valid_metrics, k_valid, k_train, max_valid_iou, max_train_iou):
+    print(f"{epoch:<4}   |  {train_metrics['custom_bce']:.3f}        {train_metrics['bce']:.3f}         {valid_metrics['bce']:.3f}         "
+            f"{100*train_metrics['iou']:.2f}         {100*valid_metrics['iou']:.2f}        |  {k_valid:<7}     {k_train:<7}    "
+            f"{100*max_valid_iou:.2f}           {100*max_train_iou:.2f}")
+
+def current_time():
+    time_zone_PT = pytz.timezone('Europe/London')
+    return datetime.now(time_zone_PT)
+
+def current_time_repr():
+    return current_time().strftime("%Y-%m-%d|%Hh%M")
+
+def get_created_class_attributes(object_):
+    return [a for a in dir(object_) if a[:2] != '__']
+
+def print_mem():
+    print('memory:', torch.cuda.memory_reserved()/(1024**3))
+
 # def _plot_font_old(x, mode='1_row'):
 #     # Está a dar mal ainda! É preciso pôr a funcionar para tensores
 #     if mode == '1_row':
