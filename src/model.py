@@ -5,7 +5,7 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
-N_CHARACTERS = 26
+N_LETTERS = 26
 
 def encoder_block(n_layers, in_channels, out_channels, kernel_size=3, use_batchnorm=False, use_softplus=True, beta=1.):
     "n_layers is the number of blocks of Conv2d + BackNorm2d + ReLU"
