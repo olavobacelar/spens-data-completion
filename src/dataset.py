@@ -6,7 +6,7 @@ import numpy as np
 import numpy.random as rd
 from typing import Union
 import torch
-from dataclasses import dataclass
+from dataclasses import dataclass, astuple
 from torch.utils.data import Dataset, DataLoader
 
 N_LETTERS = 26  # tirar daqui, precisa de estar também no modulo que chama. E não devia estar hardcoded
