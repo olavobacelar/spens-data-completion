@@ -1,7 +1,7 @@
 import string
 import pickle
 import pytz
-import datetime
+from datetime import date, datetime
 import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
