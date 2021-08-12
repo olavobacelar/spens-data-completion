@@ -1,3 +1,4 @@
+import utils
 import torch
 import torch.nn as nn
 
@@ -33,7 +34,7 @@ def update_running_metrics(metrics, logits_missing, y_missing, letter_masks,
     with torch.no_grad():
         batch_size_ = letter_masks.shape[0]
         n_missing_letters = (~letter_masks).sum().item()
-        y_pred = discretize(torch.sigmoid(logits_missing))
+        y_pred = utils.discretize(torch.sigmoid(logits_missing))
 
         if 'bce_all' in metrics:
             assert loss is not None
