@@ -165,9 +165,7 @@ def pickle_dump(object, filename, save_dir=None, full_path=False):
     else:
         # By default saves to the pickle directory
         if save_dir is None:
-            save_dir = BASE_DIR + 'pickle/'
-        else:
-            save_dir = BASE_DIR + save_dir
+            save_dir = 'pickle/'
 
     with open(save_dir + filename, 'wb') as f:
         pickle.dump(object, f)
@@ -179,9 +177,7 @@ def pickle_load(filename, save_dir=None, full_path=False):
     else:
         # By default loads from the pickle directory
         if save_dir is None:
-            save_dir = BASE_DIR + 'pickle/'
-        else:
-            save_dir = BASE_DIR + save_dir
+            save_dir = 'pickle/'
 
     with open(save_dir + filename, 'rb') as f:
         return pickle.load(f)
@@ -230,7 +226,7 @@ def save_checkpoint(file_name, save_dir=None, best_model=None, last_model=None,
     '''We can save the best_model, last_model, best_optimizer, last_optimizer, 
     and as kwargs the best_epoch, last_epoch, minimum_loss, batch_size, comments
     (a string with extra notes), etc.
-    If save_dir is None, it will default to add the directory pickle to BASE_DIR
+    If save_dir is None, it will default to add the directory pickle to the base directory.
     By default, we send to CPU because it's safer this way I think
     '''
 
@@ -272,9 +268,7 @@ def save_checkpoint(file_name, save_dir=None, best_model=None, last_model=None,
     else:
         # By default loads from the pickle directory
         if save_dir is None:
-            save_dir = BASE_DIR + 'checkpoints/'
-        else:
-            save_dir = BASE_DIR + save_dir
+            save_dir = 'checkpoints/'
     
     torch.save(checkpoint, save_dir + file_name)
 
@@ -286,9 +280,7 @@ def load_checkpoint(file_name, save_dir=None, full_path=False):
     else:
         # By default loads from the pickle directory
         if save_dir is None:
-            save_dir = BASE_DIR + 'checkpoints/'
-        else:
-            save_dir = BASE_DIR + save_dir
+            save_dir = 'checkpoints/'
     
     full_path_to_file = save_dir + file_name
 
