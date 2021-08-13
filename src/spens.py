@@ -43,7 +43,7 @@ class UnrollConfigNew:
               f'init_mode: {self.init_mode}')
 
   
-  class UnrollEnergyNew(nn.Module):
+class UnrollEnergyNew(nn.Module):
     '''
     [...] This module is to be optimized in the space of parameters of the energy
     function and the space of hyper-parameters of the optimizer (...)
