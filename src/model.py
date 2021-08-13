@@ -1,5 +1,4 @@
 from typing import List, Tuple
-from typing import Tuple
 from dataclasses import dataclass, astuple
 import torch
 from torch import nn
