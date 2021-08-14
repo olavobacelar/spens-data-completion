@@ -1,5 +1,5 @@
 from typing import List, Tuple, Union
-from dataclasses import dataclass, astuple
+from dataclasses import dataclass, astuple, replace
 from torch.utils.data import DataLoader
 from collections import OrderedDict
 import torch
