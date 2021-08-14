@@ -638,7 +638,7 @@ class TestingConfig:
     def print_training_repr(self):
         print(f'Train Config: outer_lr: {self.outer_lr}')
 
-def test_unrolled(testing_config, checkpoint=None, dataset_config=None, energy_net_config=None, unroll_config=None, dataset_to_test='test'):
+def test_unrolled(testing_config, checkpoint=None, dataset_config=None, energy_net_config=None, unroll_config=None, dataset_to_test='test', is_unroll_new=True):
 
     all_configs_except_testing = (dataset_config, energy_net_config, unroll_config)
     all_configs_except_testing_are_none = all(cfg is None for cfg in all_configs_except_testing)
@@ -687,8 +687,10 @@ def test_unrolled(testing_config, checkpoint=None, dataset_config=None, energy_n
             unroll_config_test = unroll_config
 
         energy_net = EnergyNet(energy_net_config).to(device)
-        #Por UnrollEnergy
-        unrolled_test = UnrollEnergyNew(energy_net, criterion, unroll_config_test).to(device)
+        if is_unroll_new:
+            unrolled_test = UnrollEnergyNew(energy_net, criterion, unroll_config_test).to(device)
+        else:
+            unrolled_test = UnrollEnergy(energy_net, criterion, unroll_config_test).to(device)
         unrolled_test.load_state_dict(saved_model_parameters)
     elif saved_model is not None:
         assert not unroll_config.random_init and not force_init_zero_testing, 'Not coded the possibility of having a saved model and forcing the init to be zero'
