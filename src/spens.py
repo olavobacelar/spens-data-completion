@@ -6,6 +6,7 @@ import torch
 import sys
 from torch import nn
 import torch.nn.functional as F
+import torch.optim as optim
 from dataset import FontsDataset
 from model import EnergyNet
 
