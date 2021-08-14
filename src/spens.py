@@ -9,7 +9,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from dataset import FontsDataset
 from model import EnergyNet
-from utils import print_header_scores
+from utils import print_header_scores, current_time, current_time_repr
 
 @dataclass
 class UnrollConfigNew:
