@@ -1,4 +1,5 @@
 from typing import List, Tuple, Union
+from dataset import FontsDataset
 from dataclasses import dataclass, astuple
 from collections import OrderedDict
 import torch
