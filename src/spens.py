@@ -197,7 +197,7 @@ class UnrollEnergy(nn.Module):
         self.energy_net = energy_net
         self.loss_function = loss_function
         self.n_iter_inference, self.inner_lr, self.random_init, self.init_mode, self.average_of_letter_init, \
-        self.entropy_factor, self.plot_y, self.plot_hist, self.to_print = unroll_config
+        self.entropy_factor, self.plot_y, self.plot_hist, self.to_print, baseline_init = unroll_config
         
     def forward(self, x, y, letter_masks, lr, create_graph=True, logits_y_0=None):
         # The ground truth y is here for the computation of the loss
