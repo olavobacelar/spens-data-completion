@@ -1,5 +1,4 @@
 from typing import List, Tuple, Union
-from dataset import FontsDataset
 from dataclasses import dataclass, astuple
 from torch.utils.data import DataLoader
 from collections import OrderedDict
@@ -7,6 +6,8 @@ import torch
 import sys
 from torch import nn
 import torch.nn.functional as F
+from dataset import FontsDataset
+from model import EnergyNet
 
 @dataclass
 class UnrollConfigNew:
