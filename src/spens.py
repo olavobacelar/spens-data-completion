@@ -9,6 +9,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from dataset import FontsDataset
 from model import EnergyNet
+from utils import print_header_scores
 
 @dataclass
 class UnrollConfigNew:
