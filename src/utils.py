@@ -264,6 +264,15 @@ def load_checkpoint(file_name, save_dir=None, full_path=False):
     else:
         raise Exception("This path doesn't correspond to any file!")
 
+class Squeeze(nn.Module):
+    def __init__(self):
+        super(Squeeze, self).__init__()
+    #Make differentiable!
+    def forward(self, l):
+        max_abs = torch.max(torch.abs(l))
+        return l/max_abs
+
+squeeze = Squeeze()
 
 def get_usual_energy_net_params(model):
     # TODO: Não criar lista de parametros, mas iterador
@@ -332,14 +341,6 @@ class Entropy(nn.Module):
         return h
 
 entropy = Entropy()
-
-class Squeeze(nn.Module):
-    def __init__(self):
-        super(Squeeze, self).__init__()
-    #Make differentiable!
-    def forward(self, l):
-        max_abs = torch.max(torch.abs(l))
-        return l/max_abs
 
 def create_hparams_dict(last_softplus, init_mode, n_iter_inference, entropy_factor, inner_lr, lr):
     hparams_dict = {'last_softplus': last_softplus,
