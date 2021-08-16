@@ -132,33 +132,6 @@ def add_subplot_border(ax, width=0, color=None):
 # rec = Rectangle((autoAxis[0]-0.7,autoAxis[2]-0.2),(autoAxis[1]-autoAxis[0])+1,(autoAxis[3]-autoAxis[2])+0.4,fill=False,lw=2)
 # rec = sub1.add_patch(rec)
 
-def plot_font(x, choice_characters_mask=None, mode='1_row'):
-    # Está a dar mal ainda! É preciso pôr a funcionar para tensores
-    # Por a mostrar letras que faltam também para 5_rows!
-
-    if mode == '5_rows':
-        _, axs = plt.subplots(6, 5, figsize=(8*5/6, 8))
-        for i in range(6):
-            for j in range(5):
-                axs[i, j].set_axis_off()
-                index = i*5+j
-                if index < 26:
-                    axs[i, j].spy(x[i*5+j])
-                else:
-                    pass
-    elif mode == '1_row':
-        _, axs = plt.subplots(1, len(x), figsize=(24, 24))
-        for i, ax in enumerate(axs):
-            ax.set_axis_off()
-            ax.spy(x[i])
-            if choice_characters_mask is not None and choice_characters_mask[i] == 0:
-                add_subplot_border(ax, width=2, color='red')
-    else:
-        raise Exception(f'The mode "{mode}" doesn\'t exist!')
-    plt.setp(axs, xticks=[], yticks=[])
-    plt.subplots_adjust(wspace=0.05, hspace=0.05)
-    plt.show()
-
 def pickle_dump(object, filename, save_dir=None, full_path=False):
 
     if full_path:
