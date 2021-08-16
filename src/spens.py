@@ -8,6 +8,7 @@ import sys
 from torch import nn
 import torch.nn.functional as F
 import torch.optim as optim
+from metrics_losses import init_running_metrics
 from dataset import FontsDataset
 from model import EnergyNet
 from utils import print_header_scores, current_time, current_time_repr
