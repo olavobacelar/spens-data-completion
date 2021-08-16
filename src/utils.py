@@ -340,8 +340,6 @@ class Squeeze(nn.Module):
     def forward(self, l):
         max_abs = torch.max(torch.abs(l))
         return l/max_abs
-        
-squeeze = Squeeze()
 
 def create_hparams_dict(last_softplus, init_mode, n_iter_inference, entropy_factor, inner_lr, lr):
     hparams_dict = {'last_softplus': last_softplus,
